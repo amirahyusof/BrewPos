@@ -1,5 +1,5 @@
 
-import { Home } from './pages/Home'
+import { Home } from './pages/MainPage'
 
 function App() {
   return (
