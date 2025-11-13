@@ -1,6 +1,5 @@
-import * as React from "react"
-import { GalleryVerticalEnd, Minus, Plus } from "lucide-react"
-
+import React, { useState, useEffect } from 'react';
+import { GalleryVerticalEnd, Minus, Plus, LogOut, Coffee } from "lucide-react"
 import { SearchForm } from "@/components/search-form"
 import {
   Collapsible,
@@ -20,149 +19,81 @@ import {
   SidebarMenuSubItem,
   SidebarRail,
 } from "@/components/ui/sidebar"
+import { Button } from "./ui/button"
 
 // This is sample data.
 const data = {
   navMain: [
     {
-      title: "Getting Started",
+      title: "Dashboard",
+      url: "#",
+      isActive: true,
+    },
+    {
+      title: "Main Order",
       url: "#",
       items: [
         {
-          title: "Installation",
-          url: "#",
+          title: "Main Menu",
+          href: "#",
         },
         {
-          title: "Project Structure",
-          url: "#",
+          title: "Beverages",
+          href: "#",
+        },
+        {
+          title: "Desserts",
+          href: "#",
+          icon: "BarChart2",
+        },
+        {
+          title: "Appetizers",
+          href: "#",
         },
       ],
     },
     {
-      title: "Building Your Application",
+      title: "Analytics",
       url: "#",
+    },
+    {
+      title: "Withdrawals",
+      href: "#",
+    },
+    {
+      title: "Manage Dishes",
+      href: "#",
       items: [
         {
-          title: "Routing",
-          url: "#",
+          title: "Add New Dish",
+          href: "#",
         },
         {
-          title: "Data Fetching",
-          url: "#",
-          isActive: true,
+          title: "Edit Existing Dish",
+          href: "#",
         },
-        {
-          title: "Rendering",
-          url: "#",
-        },
-        {
-          title: "Caching",
-          url: "#",
-        },
-        {
-          title: "Styling",
-          url: "#",
-        },
-        {
-          title: "Optimizing",
-          url: "#",
-        },
-        {
-          title: "Configuring",
-          url: "#",
-        },
-        {
-          title: "Testing",
-          url: "#",
-        },
-        {
-          title: "Authentication",
-          url: "#",
-        },
-        {
-          title: "Deploying",
-          url: "#",
-        },
-        {
-          title: "Upgrading",
-          url: "#",
-        },
-        {
-          title: "Examples",
-          url: "#",
+        { title: "Remove Dish",
+          href: "#",
         },
       ],
     },
     {
-      title: "API Reference",
+      title: "Manage Payments",
       url: "#",
-      items: [
-        {
-          title: "Components",
-          url: "#",
-        },
-        {
-          title: "File Conventions",
-          url: "#",
-        },
-        {
-          title: "Functions",
-          url: "#",
-        },
-        {
-          title: "next.config.js Options",
-          url: "#",
-        },
-        {
-          title: "CLI",
-          url: "#",
-        },
-        {
-          title: "Edge Runtime",
-          url: "#",
-        },
-      ],
-    },
-    {
-      title: "Architecture",
-      url: "#",
-      items: [
-        {
-          title: "Accessibility",
-          url: "#",
-        },
-        {
-          title: "Fast Refresh",
-          url: "#",
-        },
-        {
-          title: "Next.js Compiler",
-          url: "#",
-        },
-        {
-          title: "Supported Browsers",
-          url: "#",
-        },
-        {
-          title: "Turbopack",
-          url: "#",
-        },
-      ],
-    },
-    {
-      title: "Community",
-      url: "#",
-      items: [
-        {
-          title: "Contribution Guide",
-          url: "#",
-        },
-      ],
     },
   ],
 }
+  
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  const [user, setUser] = useState(null);
+   const [syncStatus, setSyncStatus] = useState('Online');
+  
+  const handleLogout = () => {
+    setUser(null);
+    
+  };
+
   return (
     <Sidebar {...props}>
       <SidebarHeader>
@@ -170,12 +101,11 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" asChild>
               <a href="#">
-                <div className="bg-sidebar-primary text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg">
-                  <GalleryVerticalEnd className="size-4" />
+                <div className="bg-amber-950 text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg">
+                  <Coffee className="size-4" />
                 </div>
                 <div className="flex flex-col gap-0.5 leading-none">
-                  <span className="font-medium">Documentation</span>
-                  <span className="">v1.0.0</span>
+                  <h1 className="text-lg font-semibold">BrewPOS</h1>
                 </div>
               </a>
             </SidebarMenuButton>
@@ -207,9 +137,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                           <SidebarMenuSubItem key={item.title}>
                             <SidebarMenuSubButton
                               asChild
-                              isActive={item.isActive}
+                              isActive={item.isActive ?? false}
                             >
-                              <a href={item.url}>{item.title}</a>
+                              <a href={item.href}>{item.title}</a>
                             </SidebarMenuSubButton>
                           </SidebarMenuSubItem>
                         ))}
@@ -221,6 +151,17 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             ))}
           </SidebarMenu>
         </SidebarGroup>
+        <div className="p-4 border-t border-gray-700">
+          <p className="text-sm text-gray-400 mb-2">Logged in as:</p>
+          <p className="text-sm font-semibold mb-4 truncate">{user?.email}</p>
+          <div className="flex items-center gap-2 mb-4">
+            <div className={`w-2 h-2 rounded-full ${syncStatus === 'Online' ? 'bg-green-500' : 'bg-red-500'}`}></div>
+            <span className="text-xs">{syncStatus}</span>
+          </div>
+          <Button onClick={handleLogout} className="w-full flex items-center justify-center gap-2 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg font-semibold transition">
+            <LogOut size={18} /> Logout
+          </Button>
+        </div>
       </SidebarContent>
       <SidebarRail />
     </Sidebar>
