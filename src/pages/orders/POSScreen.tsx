@@ -112,7 +112,7 @@ export default function POSScreen(){
           </div>
         </div>
 
-        <div className="flex-1 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2">
+        <div className="flex-1 grid pr-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 space-y-20 md:gap-2 overflow-y-scroll md:overflow-hidden">
           {filteredProducts.map((product) => (
             <ProductCard
               key={product.id}

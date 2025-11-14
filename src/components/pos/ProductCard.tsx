@@ -18,17 +18,17 @@ addToCart: (product: Product) => void;
 
 export const ProductCard: React.FC<ProductCardProps> = ({ product, addToCart }) => {
   return (
-    <div key={product.id} className='lg:w-60 lg:h-30 bg-white'>
+    <div key={product.id} className='w-20 h-20 lg:w-60 lg:h-30 bg-white'>
       <Card className="hover:shadow-lg transition-all duration-200 cursor-pointer">
         <CardContent className="flex flex-col items-center text-center p-4">
           {product.imageUrl ? (
             <img
               src={product.imageUrl}
               alt={product.name}
-              className="w-20 h-20 object-cover rounded-xl mb-2"
+              className="md:w-20 md:h-20 object-cover rounded-xl mb-2"
             />
             ) : (
-            <div className="w-20 h-20 bg-gray-100 rounded-xl flex items-center justify-center text-gray-400 mb-2">
+            <div className="md:w-20 md:h-20 bg-gray-100 rounded-xl flex items-center justify-center text-gray-400 mb-2">
               ☕
             </div>
             )}
