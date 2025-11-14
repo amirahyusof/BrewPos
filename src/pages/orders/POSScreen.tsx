@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { ProductCard } from "@/components/pos/ProductCard";
 import { OrderSidebar } from "@/components/pos/OrderSidebar";
 import type { OrderItem } from "@/components/pos/OrderSidebar";
@@ -13,7 +13,7 @@ export interface Product {
   category: string;
 }
 
-export const POSScreen: React.FC = () => {
+export default function POSScreen(){
   const [cart, setCart] = useState<OrderItem[]>([]);
   const { addItem } = useLocalDB();
   const [searchTerm, setSearchTerm] = useState("");
@@ -112,7 +112,7 @@ export const POSScreen: React.FC = () => {
           </div>
         </div>
 
-        <div className="flex-1 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2">
+        <div className="flex-1 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2">
           {filteredProducts.map((product) => (
             <ProductCard
               key={product.id}
