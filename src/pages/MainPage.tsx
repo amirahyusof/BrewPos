@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/breadcrumb"
 
 import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
-import { POSScreen } from './POSScreen';
+import { POSScreen } from './orders/POSScreen';
 
 
 export const Home: React.FC = () => {
