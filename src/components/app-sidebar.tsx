@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { GalleryVerticalEnd, Minus, Plus, LogOut, Coffee } from "lucide-react"
+import React, { useState } from 'react';
+import { Minus, Plus, LogOut, Coffee } from "lucide-react"
 import { SearchForm } from "@/components/search-form"
 import {
   Collapsible,
