@@ -246,7 +246,7 @@ export const ProductList: React.FC = () => {
 
       {/* Delete Confirmation Modal */}
       {deleteConfirm && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div className="fixed inset-0 bg-transparent bg-opacity-50 flex items-center justify-center z-50">
           <Card className="w-96">
             <CardHeader>
               <CardTitle>Delete Product?</CardTitle>

@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { AlertCircle, Upload, X } from 'lucide-react';
 import type { Product, CreateProductInput } from '@/hooks/useProducts';
+import { toast } from 'sonner';
 
 interface ProductFormProps {
   onSubmit: (data: CreateProductInput) => Promise<void>;
@@ -61,7 +62,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
     const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
-      [name]: name === 'price' || name === 'stock' ? parseFloat(value) || 0 : value,
+      [name]: name === 'price' || name === 'stock' ? parseInt(value) || 0 : value,
     }));
     // Clear error for this field
     if (errors[name]) {
@@ -109,6 +110,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
       await onSubmit(formData);
       setSuccess(true);
       setTimeout(() => setSuccess(false), 3000);
+      toast.success('Product added successfully!');
       
       if (!isEditing) {
         setFormData({
