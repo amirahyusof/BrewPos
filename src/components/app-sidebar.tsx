@@ -1,4 +1,5 @@
 
+// src/components/app-sidebar.tsx (UPDATED - Fixed Routing)
 import React, { useState } from 'react';
 import {
   Minus,
@@ -46,7 +47,7 @@ interface NavItem {
   items?: NavItem[];
 }
 
-// Enhanced navigation data with icons
+// Updated navigation data with CONSISTENT URL handling
 const data = {
   navMain: [
     {
@@ -57,49 +58,22 @@ const data = {
     {
       title: "Main Order",
       icon: <ShoppingCart className="w-4 h-4" />,
-      url: "/orders",
+      url: "/orders", 
       items: [
         {
           title: "Point of Sale",
-          href: "/order/pos",
+          url: "/order/pos", 
           icon: <ShoppingCart className="w-3 h-3" />,
         },
         {
           title: "Order History",
-          href: "/order/history",
+          url: "/order/history",  
           icon: <BarChart3 className="w-3 h-3" />,
         },
         {
           title: "New Order",
-          href: "/order/new",
+          url: "/order/new", 
           icon: <Plus className="w-3 h-3" />,
-        },
-      ],
-    },
-    {
-      title: "Manage Products",
-      icon: <UtensilsCrossed className="w-4 h-4" />,
-      url: "/products",
-      items: [
-        {
-          title: "All Products",
-          href: "/products/list",
-          icon: <UtensilsCrossed className="w-3 h-3" />,
-        },
-        {
-          title: "Add New Product",
-          href: "/products/add",
-          icon: <Plus className="w-3 h-3" />,
-        },
-        {
-          title: "Edit Product",
-          href: "/products/edit",
-          icons: <Edit className="w-3 h-3" />,
-        },
-        {
-          title: "Categories",
-          href: "/products/categories",
-          icon: <LayoutDashboard className="w-3 h-3" />,
         },
       ],
     },
@@ -110,11 +84,38 @@ const data = {
     },
     {
       title: "Withdrawals",
-      href: "/withdrawals",
+      url: "/withdrawals", 
       icon: <Wallet className="w-4 h-4" />,
     },
     {
-      title: "Payments",
+      title: "Manage Products",
+      icon: <UtensilsCrossed className="w-4 h-4" />,
+      url: "/products", 
+      items: [
+        {
+          title: "All Products",
+          url: "/products/list", 
+          icon: <UtensilsCrossed className="w-3 h-3" />,
+        },
+        {
+          title: "Add New Product",
+          url: "/products/add", 
+          icon: <Plus className="w-3 h-3" />,
+        },
+        {
+          title: "Edit Product",
+          url: "/products/edit", 
+          icon: <Edit className="w-3 h-3" />,
+        },
+        {
+          title: "Categories",
+          url: "/products/categories", 
+          icon: <LayoutDashboard className="w-3 h-3" />,
+        },
+      ],
+    },
+    {
+      title: "Manage Payments",
       url: "/payments",
       icon: <CreditCard className="w-4 h-4" />,
     },
@@ -137,17 +138,16 @@ export function AppSidebar({ user, onLogout, isOnline = true, ...props }: AppSid
   const location = useLocation();
   const [hoveredItem, setHoveredItem] = useState<string | null>(null);
 
-  // Check if a route is active
+  // Check if a route is active (SIMPLIFIED - only check 'url' property)
   const isActive = (path?: string) => {
     if (!path) return false;
     return location.pathname === path || location.pathname.startsWith(path + '/');
   };
 
-  // Handle navigation with smooth transition
+  // Handle navigation - CONSISTENT handling for all items
   const handleNavigate = (path?: string) => {
     if (path && path !== '#') {
       navigate(path);
-      // Add smooth scroll animation
       setTimeout(() => {
         window.scrollTo({ top: 0, behavior: 'smooth' });
       }, 100);
@@ -180,8 +180,8 @@ export function AppSidebar({ user, onLogout, isOnline = true, ...props }: AppSid
                   <Coffee className="size-5 font-bold" />
                 </div>
                 <div className="flex flex-col gap-0.5 leading-none">
-                  <h1 className="text-lg font-bold text-white">BrewCoffee</h1>
-                  <span className="text-xs text-gray-400">POS System</span>
+                  <h1 className="text-lg font-bold text-white">BrewPOS</h1>
+                  <span className="text-xs text-gray-400">v1.0.0</span>
                 </div>
               </a>
             </SidebarMenuButton>
@@ -200,14 +200,14 @@ export function AppSidebar({ user, onLogout, isOnline = true, ...props }: AppSid
           <SidebarMenu className="gap-1">
             {data.navMain.map((item, index) => {
               const hasChildren = item.items && item.items.length > 0;
-              const itemPath = item.url || item.href;
+              const itemPath = item.url; // Use 'url' consistently
               const itemIsActive = isActive(itemPath);
-              const hasActiveChild = item.items?.some(child => isActive(child.href));
+              const hasActiveChild = item.items?.some(child => isActive(child.url));
 
               return (
                 <Collapsible
                   key={item.title}
-                  defaultOpen={index === 1}
+                  defaultOpen={index === 1} // Main Order expanded by default
                   className="group/collapsible"
                 >
                   <SidebarMenuItem
@@ -216,19 +216,26 @@ export function AppSidebar({ user, onLogout, isOnline = true, ...props }: AppSid
                   >
                     {hasChildren ? (
                       <>
+                        {/* Parent with children - clicking opens menu or navigates */}
                         <CollapsibleTrigger asChild>
                           <SidebarMenuButton
                             className={`
                               transition-all duration-300 ease-out
-                              ${hasActiveChild
-                                ? ' from-amber-600 to-amber-700 text-white shadow-lg bg-linear-to-r'
+                              ${hasActiveChild || itemIsActive
+                                ? 'bg-linear-to-r from-amber-600 to-amber-700 text-white shadow-lg'
                                 : 'text-gray-300 hover:bg-gray-800 hover:text-white'
                               }
-                              ${hoveredItem === item.title && !hasActiveChild
+                              ${hoveredItem === item.title && !hasActiveChild && !itemIsActive
                                 ? 'bg-gray-800 translate-x-1'
                                 : ''
                               }
                             `}
+                            onClick={() => {
+                              // If no child is active, navigate to parent URL
+                              if (!hasActiveChild && itemPath) {
+                                handleNavigate(itemPath);
+                              }
+                            }}
                           >
                             <span className="flex items-center gap-3 flex-1">
                               <span className={`
@@ -240,7 +247,7 @@ export function AppSidebar({ user, onLogout, isOnline = true, ...props }: AppSid
                               <span className="font-medium text-sm">{item.title}</span>
                             </span>
                             <Plus className="ml-auto w-4 h-4 transition-all duration-300 group-data-[state=open]/collapsible:hidden" />
-                            <Minus className="ml-auto w-4 h-4 transition-all duration-300 group-data-[state=closed]/collapsible:hidden rotate-animation" />
+                            <Minus className="ml-auto w-4 h-4 transition-all duration-300 group-data-[state=closed]/collapsible:hidden" />
                           </SidebarMenuButton>
                         </CollapsibleTrigger>
 
@@ -249,7 +256,7 @@ export function AppSidebar({ user, onLogout, isOnline = true, ...props }: AppSid
                           <CollapsibleContent className="data-[state=closed]:animate-collapsible-up data-[state=open]:animate-collapsible-down">
                             <SidebarMenuSub className="border-l-2 border-gray-700 ml-0 pl-0 py-2 space-y-1">
                               {item.items.map((subItem) => {
-                                const subIsActive = isActive(subItem.href);
+                                const subIsActive = isActive(subItem.url);
                                 return (
                                   <SidebarMenuSubItem
                                     key={subItem.title}
@@ -269,7 +276,7 @@ export function AppSidebar({ user, onLogout, isOnline = true, ...props }: AppSid
                                           : ''
                                         }
                                       `}
-                                      onClick={() => handleNavigate(subItem.href)}
+                                      onClick={() => handleNavigate(subItem.url)}
                                     >
                                       <a href="#" onClick={(e) => e.preventDefault()}>
                                         <span className={`
@@ -289,6 +296,7 @@ export function AppSidebar({ user, onLogout, isOnline = true, ...props }: AppSid
                         )}
                       </>
                     ) : (
+                      // Single item without children
                       <SidebarMenuButton
                         asChild
                         className={`
@@ -323,8 +331,8 @@ export function AppSidebar({ user, onLogout, isOnline = true, ...props }: AppSid
         </SidebarGroup>
       </SidebarContent>
 
-      {/* Footer Section */} 
-      <div className="border-t border-gray-700 from-gray-900 to-gray-800 bg-linear-to-t">
+      {/* Footer Section */}
+      <div className="border-t border-gray-700 bg-linear-to-t from-gray-900 to-gray-800">
         <SidebarGroup className="py-3">
           <SidebarMenu>
             <SidebarMenuItem>
@@ -378,8 +386,7 @@ export function AppSidebar({ user, onLogout, isOnline = true, ...props }: AppSid
                       active:scale-95
                     "
                   >
-                    <LogOut size={18} />
-                    Logout
+                    <LogOut size={18} /> Logout
                   </Button>
                 )}
               </div>
@@ -392,4 +399,3 @@ export function AppSidebar({ user, onLogout, isOnline = true, ...props }: AppSid
     </Sidebar>
   )
 }
-
