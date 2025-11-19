@@ -7,7 +7,9 @@ import MainLayout from '@/components/MainLayout';
 import Dashboard from '@/pages/Dashboard';
 import POSScreen from '@/pages/orders/POSScreen';
 import OrderHistory from '@/pages/orders/OrderHistory';
+import Orders from '@/pages/Orders';
 import NewOrder from '@/pages/orders/NewOrder';
+import Products from '@/pages/Products';
 import ProductList from '@/pages/products/ProductList';
 import ProductAdd from '@/pages/products/ProductAdd';
 import ProductEdit from '@/pages/products/ProductEdit';
@@ -28,11 +30,13 @@ function App() {
             <Route path="/dashboard" element={<Dashboard />} />
 
             {/* Orders */}
+            <Route path="/orders" element={<Orders />} />
             <Route path="/order/pos" element={<POSScreen />} />
             <Route path="/order/history" element={<OrderHistory />} />
             <Route path="/order/new" element={<NewOrder />} />
 
             {/* Products */}
+            <Route path="/products" element={<Products />} />
             <Route path="/products/list" element={<ProductList />} />
             <Route path="/products/add" element={<ProductAdd />} />
             <Route path="/products/edit" element={<ProductEdit />} />
