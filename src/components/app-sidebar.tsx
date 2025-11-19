@@ -57,6 +57,7 @@ const data = {
     {
       title: "Main Order",
       icon: <ShoppingCart className="w-4 h-4" />,
+      url: "/orders",
       items: [
         {
           title: "Point of Sale",
@@ -78,6 +79,7 @@ const data = {
     {
       title: "Manage Products",
       icon: <UtensilsCrossed className="w-4 h-4" />,
+      url: "/products",
       items: [
         {
           title: "All Products",
