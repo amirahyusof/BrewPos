@@ -22,11 +22,13 @@ import {
 // Map routes to breadcrumb labels
 const routeBreadcrumbs: Record<string, any[]> = {
   '/dashboard': [{ label: 'Dashboard' }],
+  '/orders': [{ label: 'Orders' }],
   '/order/pos': [{ label: 'Orders', href: '/order/pos' }, { label: 'Point of Sale' }],
   '/order/history': [{ label: 'Orders', href: '/order/history' }, { label: 'Order History' }],
   '/order/new': [{ label: 'Orders', href: '/order/new' }, { label: 'New Order' }],
+  '/products': [{ label: 'Products', href: '/products'  }],
   '/products/list': [{ label: 'Products', href: '/products/list' }, { label: 'All Products' }],
-  '/products/add': [{ label: 'Products', href: '/products/add' }, { label: 'Add New Dish' }],
+  '/products/add': [{ label: 'Products', href: '/products/add' }, { label: 'Add New Product' }],
   '/products/edit': [{ label: 'Products', href: '/products/edit' }, { label: 'Edit Products' }],
   '/products/categories': [{ label: 'Products', href: '/products/categories' }, { label: 'Categories' }],
   '/analytics': [{ label: 'Analytics' }],
