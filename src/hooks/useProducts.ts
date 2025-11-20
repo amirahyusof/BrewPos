@@ -1,6 +1,7 @@
-// src/hooks/useProducts.ts (FIXED)
+// src/hooks/useProducts.ts - FIXED OFFLINE SUPPORT
 import { useState, useEffect } from 'react';
 import { useLocalDB } from './useLocalDB';
+import { toast } from 'sonner';
 
 export interface Product {
   id: string;
@@ -34,11 +35,17 @@ export function useProducts() {
     try {
       setLoading(true);
       setError(null);
+      console.log('Loading products from IndexedDB...');
+      
       const allProducts = (await getAll('products')) || [];
+      console.log(`Loaded ${allProducts.length} products from IndexedDB`);
+      
       setProducts(allProducts);
     } catch (err) {
-      setError('Failed to load products');
+      const errorMsg = 'Failed to load products';
+      setError(errorMsg);
       console.error('Error loading products:', err);
+      toast.error(errorMsg);
     } finally {
       setLoading(false);
     }
@@ -59,17 +66,22 @@ export function useProducts() {
         updatedAt: new Date().toISOString(),
       };
 
+      console.log('Adding product to IndexedDB:', newProduct.name);
       await addItem('products', newProduct);
+      
       setProducts((prev) => [...prev, newProduct]);
+      console.log('Product added successfully');
       return newProduct;
     } catch (err) {
-      setError('Failed to add product');
+      const errorMsg = 'Failed to add product';
+      setError(errorMsg);
       console.error('Error adding product:', err);
+      toast.error(errorMsg);
       return null;
     }
   };
 
-  //update product
+  // Update product
   const updateProduct = async (
     id: string,
     updates: Partial<CreateProductInput>
@@ -77,7 +89,9 @@ export function useProducts() {
     try {
       const product = products.find((p) => p.id === id);
       if (!product) {
-        setError('Product not found');
+        const errorMsg = 'Product not found';
+        setError(errorMsg);
+        toast.error(errorMsg);
         return null;
       }
 
@@ -87,14 +101,19 @@ export function useProducts() {
         updatedAt: new Date().toISOString(),
       };
 
+      console.log('Updating product in IndexedDB:', updatedProduct.name);
       await updateItem('products', id, updatedProduct);
+      
       setProducts((prev) =>
         prev.map((p) => (p.id === id ? updatedProduct : p))
       );
+      console.log('Product updated successfully');
       return updatedProduct;
     } catch (err) {
-      setError('Failed to update product');
+      const errorMsg = 'Failed to update product';
+      setError(errorMsg);
       console.error('Error updating product:', err);
+      toast.error(errorMsg);
       return null;
     }
   };
@@ -102,12 +121,17 @@ export function useProducts() {
   // Delete product
   const deleteProduct = async (id: string): Promise<boolean> => {
     try {
+      console.log('Deleting product from IndexedDB:', id);
       await deleteItem('products', id);
+      
       setProducts((prev) => prev.filter((p) => p.id !== id));
+      console.log('Product deleted successfully');
       return true;
     } catch (err) {
-      setError('Failed to delete product');
+      const errorMsg = 'Failed to delete product';
+      setError(errorMsg);
       console.error('Error deleting product:', err);
+      toast.error(errorMsg);
       return false;
     }
   };
@@ -123,7 +147,7 @@ export function useProducts() {
     return Array.from(categories).sort();
   };
 
-  // Search products
+  // Search products (works offline!)
   const searchProducts = (query: string): Product[] => {
     const q = query.toLowerCase();
     return products.filter(

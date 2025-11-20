@@ -1,3 +1,6 @@
+// src/hooks/useServiceWorker.ts - TEMPORARILY DISABLED
+// Service Worker will be properly implemented in Issue #14 (Offline Functionality)
+
 import { useEffect } from 'react';
 import { useNav } from '@/context/NavContext';
 
@@ -5,35 +8,12 @@ export function useServiceWorker() {
   const { setIsOnline } = useNav();
 
   useEffect(() => {
-    // Register service worker
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', async () => {
-        try {
-          const registration = await navigator.serviceWorker.register(
-            '/service-worker.js',
-            { scope: '/' }
-          );
-          console.log('Service Worker registered:', registration);
+    // ⚠️ SERVICE WORKER DISABLED FOR NOW
+    // Will be properly implemented in Phase 6: Issue #14
+    
+    console.log('Service Worker registration disabled - will be implemented in Issue #14');
 
-          // Listen for updates
-          registration.addEventListener('updatefound', () => {
-            const newWorker = registration.installing;
-            if (newWorker) {
-              newWorker.addEventListener('statechange', () => {
-                if (newWorker.state === 'activated') {
-                  console.log('New Service Worker activated');
-                  // Optionally notify user of update
-                }
-              });
-            }
-          });
-        } catch (error) {
-          console.log('Service Worker registration failed:', error);
-        }
-      });
-    }
-
-    // Monitor online/offline status
+    // Monitor online/offline status ONLY
     const handleOnline = () => {
       console.log('App is online');
       setIsOnline(true);
@@ -56,3 +36,11 @@ export function useServiceWorker() {
     };
   }, [setIsOnline]);
 }
+
+// ✅ This hook now ONLY tracks online/offline status
+// ❌ Service Worker registration removed
+// 📋 Service Worker will be added properly in Issue #14 with:
+//    - Cache strategies
+//    - Background sync
+//    - Push notifications
+//    - Proper offline handling
