@@ -2,6 +2,7 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { NavContextProvider } from '@/context/NavContext';
 import MainLayout from '@/components/MainLayout';
+import { Toaster } from 'sonner';
 
 // Pages
 import Dashboard from '@/pages/Dashboard';
@@ -23,6 +24,7 @@ function App() {
   return (
     <Router>
       <NavContextProvider>
+        <Toaster position="top-right" richColors />
         <Routes>
           {/* Main Layout Routes */}
           <Route element={<MainLayout />}>
