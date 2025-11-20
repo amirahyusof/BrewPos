@@ -27,6 +27,7 @@ function App() {
           {/* Main Layout Routes */}
           <Route element={<MainLayout />}>
             {/* Dashboard */}
+            <Route path="/" element={<Navigate to="/dashboard" replace />} />
             <Route path="/dashboard" element={<Dashboard />} />
 
             {/* Orders */}
@@ -39,7 +40,7 @@ function App() {
             <Route path="/products" element={<Products />} />
             <Route path="/products/list" element={<ProductList />} />
             <Route path="/products/add" element={<ProductAdd />} />
-            <Route path="/products/edit" element={<ProductEdit />} />
+            <Route path="/products/edit/:id" element={<ProductEdit />} />
             <Route path="/products/categories" element={<Categories />} />
 
             {/* Other Pages */}
