@@ -1,52 +1,46 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Trash2, Edit2, Search, Plus } from 'lucide-react';
+import { Trash2, Edit2, Search, Plus, Filter, X } from 'lucide-react';
 import { useProducts } from '@/hooks/useProducts';
-import { ProductForm } from './ProductForm';
-import type { Product, CreateProductInput } from '@/hooks/useProducts';
-import { useNavigate } from 'react-router-dom';
+import { toast } from 'sonner';
 
 export const ProductListCard: React.FC = () => {
   const navigate = useNavigate();
-  const { products, loading, error, addProduct, updateProduct, deleteProduct, searchProducts } = useProducts();
+  const location = useLocation();
+  const { products, loading, error, deleteProduct, searchProducts, getCategories } = useProducts();
   const [searchTerm, setSearchTerm] = useState('');
-  const [showForm, setShowForm] = useState(false);
-  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+  const [categoryFilter, setCategoryFilter] = useState<string>('');
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
+  const categories = getCategories();
+
+  // Check if navigated from Categories page with filter
+  useEffect(() => {
+    if (location.state?.filterCategory) {
+      setCategoryFilter(location.state.filterCategory);
+      // Clear the state so it doesn't persist on refresh
+      window.history.replaceState({}, document.title);
+    }
+  }, [location.state]);
+
   const filteredProducts = useMemo(() => {
-    if (!searchTerm) return products;
-    return searchProducts(searchTerm);
-  }, [products, searchTerm, searchProducts]);
+    let result = products;
 
-  // Handle add product
-  const handleAddProduct = async (data: CreateProductInput) => {
-    setSubmitting(true);
-    try {
-      const result = await addProduct(data);
-      if (result) {
-        setShowForm(false);
-      }
-    } finally {
-      setSubmitting(false);
+    // Apply search filter
+    if (searchTerm) {
+      result = searchProducts(searchTerm);
     }
-  };
 
-  // Handle update product
-  const handleUpdateProduct = async (data: CreateProductInput) => {
-    if (!editingProduct) return;
-    setSubmitting(true);
-    try {
-      const result = await updateProduct(editingProduct.id, data);
-      if (result) {
-        setEditingProduct(null);
-      }
-    } finally {
-      setSubmitting(false);
+    // Apply category filter
+    if (categoryFilter) {
+      result = result.filter(p => p.category === categoryFilter);
     }
-  };
+
+    return result;
+  }, [products, searchTerm, categoryFilter, searchProducts]);
 
   // Handle delete product
   const handleDeleteProduct = async (id: string) => {
@@ -55,6 +49,7 @@ export const ProductListCard: React.FC = () => {
       const success = await deleteProduct(id);
       if (success) {
         setDeleteConfirm(null);
+        toast.success('Product deleted successfully!');
       }
     } finally {
       setSubmitting(false);
@@ -72,53 +67,8 @@ export const ProductListCard: React.FC = () => {
     );
   }
 
-  // Show form when adding or editing
-  if (showForm || editingProduct) {
-    return (
-      <div className="space-y-4">
-        <div className="flex justify-between items-center">
-          <h2 className="text-2xl font-bold">
-            {editingProduct ? 'Edit Product' : 'Add New Product'}
-          </h2>
-          <Button
-            variant="outline"
-            onClick={() => {
-              setShowForm(false);
-              setEditingProduct(null);
-            }}
-          >
-            ← Back
-          </Button>
-        </div>
-        <ProductForm
-          onSubmit={editingProduct ? handleUpdateProduct : handleAddProduct}
-          initialData={editingProduct || undefined}
-          loading={submitting}
-          isEditing={!!editingProduct}
-        />
-      </div>
-    );
-  }
-
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex justify-between items-start">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Products</h1>
-          <p className="text-gray-600 mt-1">
-            Manage your menu items ({filteredProducts.length} total)
-          </p>
-        </div>
-        <Button
-           onClick={() => navigate('/products/add')}
-          className="bg-amber-600 hover:bg-amber-700 flex items-center gap-2"
-        >
-          <Plus size={18} />
-          Add Product
-        </Button>
-      </div>
-
       {/* Error Message */}
       {error && (
         <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
@@ -126,9 +76,29 @@ export const ProductListCard: React.FC = () => {
         </div>
       )}
 
-      {/* Search Box */}
+      {/* Header with Add Button */}
+      <div className="flex justify-between items-center">
+        <div>
+          <p className="text-gray-600">
+            {categoryFilter 
+              ? `${filteredProducts.length} products in "${categoryFilter}"`
+              : `Manage your menu items (${filteredProducts.length} total)`
+            }
+          </p>
+        </div>
+        <Button
+          onClick={() => navigate('/products/add')}
+          className="bg-amber-600 hover:bg-amber-700 flex items-center gap-2"
+        >
+          <Plus size={18} />
+          Add Product
+        </Button>
+      </div>
+
+      {/* Search and Filter Box */}
       <Card>
-        <CardContent className="pt-6">
+        <CardContent className="pt-6 space-y-4">
+          {/* Search */}
           <div className="relative">
             <Search className="absolute left-3 top-3 text-gray-400" size={20} />
             <input
@@ -139,6 +109,63 @@ export const ProductListCard: React.FC = () => {
               className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500"
             />
           </div>
+
+          {/* Category Filter */}
+          {categories.length > 0 && (
+            <div className="flex items-center gap-3 flex-wrap">
+              <div className="flex items-center gap-2 text-sm text-gray-600">
+                <Filter size={16} />
+                <span className="font-medium">Filter by category:</span>
+              </div>
+              
+              <Button
+                variant={categoryFilter === '' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setCategoryFilter('')}
+                className={categoryFilter === '' ? 'bg-amber-600 hover:bg-amber-700' : ''}
+              >
+                All
+              </Button>
+
+              {categories.map(cat => (
+                <Button
+                  key={cat}
+                  variant={categoryFilter === cat ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setCategoryFilter(cat)}
+                  className={categoryFilter === cat ? 'bg-amber-600 hover:bg-amber-700' : ''}
+                >
+                  {cat}
+                  {categoryFilter === cat && (
+                    <X size={14} className="ml-1" />
+                  )}
+                </Button>
+              ))}
+            </div>
+          )}
+
+          {/* Active Filters Display */}
+          {(searchTerm || categoryFilter) && (
+            <div className="flex items-center gap-2 text-sm">
+              <span className="text-gray-600">Active filters:</span>
+              {searchTerm && (
+                <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full flex items-center gap-1">
+                  Search: "{searchTerm}"
+                  <button onClick={() => setSearchTerm('')} className="hover:bg-blue-200 rounded-full p-0.5">
+                    <X size={14} />
+                  </button>
+                </span>
+              )}
+              {categoryFilter && (
+                <span className="px-3 py-1 bg-amber-100 text-amber-800 rounded-full flex items-center gap-1">
+                  Category: {categoryFilter}
+                  <button onClick={() => setCategoryFilter('')} className="hover:bg-amber-200 rounded-full p-0.5">
+                    <X size={14} />
+                  </button>
+                </span>
+              )}
+            </div>
+          )}
         </CardContent>
       </Card>
 
@@ -151,14 +178,28 @@ export const ProductListCard: React.FC = () => {
           {filteredProducts.length === 0 ? (
             <div className="text-center py-8">
               <p className="text-gray-500 mb-4">
-                {searchTerm ? 'No products match your search' : 'No products yet'}
+                {searchTerm || categoryFilter
+                  ? 'No products match your filters'
+                  : 'No products yet'
+                }
               </p>
-              {!searchTerm && (
+              {!searchTerm && !categoryFilter && (
                 <Button
-                  onClick={() => setShowForm(true)}
+                  onClick={() => navigate('/products/add')}
                   className="bg-amber-600 hover:bg-amber-700"
                 >
                   Add Your First Product
+                </Button>
+              )}
+              {(searchTerm || categoryFilter) && (
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setSearchTerm('');
+                    setCategoryFilter('');
+                  }}
+                >
+                  Clear Filters
                 </Button>
               )}
             </div>
@@ -197,9 +238,12 @@ export const ProductListCard: React.FC = () => {
                         </div>
                       </td>
                       <td className="p-3">
-                        <span className="px-3 py-1 bg-amber-100 text-amber-800 rounded-full text-sm font-medium">
+                        <button
+                          onClick={() => setCategoryFilter(product.category)}
+                          className="px-3 py-1 bg-amber-100 text-amber-800 rounded-full text-sm font-medium hover:bg-amber-200 transition-colors"
+                        >
                           {product.category}
-                        </span>
+                        </button>
                       </td>
                       <td className="p-3 text-right font-semibold text-gray-900">
                         RM {product.price.toFixed(2)}
@@ -248,10 +292,13 @@ export const ProductListCard: React.FC = () => {
 
       {/* Delete Confirmation Modal */}
       {deleteConfirm && (
-        <div className="fixed inset-0 bg-transparent bg-opacity-50 flex items-center justify-center z-50">
-          <Card className="w-96">
-            <CardHeader>
-              <CardTitle>Delete Product?</CardTitle>
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
+          <Card className="w-96 shadow-2xl">
+            <CardHeader className="border-b">
+              <CardTitle className="text-red-600 flex items-center gap-2">
+                <Trash2 size={20} />
+                Delete Product?
+              </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <p className="text-gray-700">
