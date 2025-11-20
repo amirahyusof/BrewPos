@@ -5,8 +5,10 @@ import { Trash2, Edit2, Search, Plus } from 'lucide-react';
 import { useProducts } from '@/hooks/useProducts';
 import { ProductForm } from './ProductForm';
 import type { Product, CreateProductInput } from '@/hooks/useProducts';
+import { useNavigate } from 'react-router-dom';
 
-export const ProductList: React.FC = () => {
+export const ProductListCard: React.FC = () => {
+  const navigate = useNavigate();
   const { products, loading, error, addProduct, updateProduct, deleteProduct, searchProducts } = useProducts();
   const [searchTerm, setSearchTerm] = useState('');
   const [showForm, setShowForm] = useState(false);
@@ -109,7 +111,7 @@ export const ProductList: React.FC = () => {
           </p>
         </div>
         <Button
-          onClick={() => setShowForm(true)}
+           onClick={() => navigate('/products/add')}
           className="bg-amber-600 hover:bg-amber-700 flex items-center gap-2"
         >
           <Plus size={18} />
@@ -219,7 +221,7 @@ export const ProductList: React.FC = () => {
                         <Button
                           size="sm"
                           variant="outline"
-                          onClick={() => setEditingProduct(product)}
+                          onClick={() => navigate(`/products/edit/${product.id}`)}
                           className="inline-flex items-center gap-1"
                         >
                           <Edit2 size={16} />
