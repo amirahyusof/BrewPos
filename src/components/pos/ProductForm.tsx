@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { AlertCircle, Upload, X } from 'lucide-react';
 import type { Product, CreateProductInput } from '@/hooks/useProducts';
 import { toast } from 'sonner';
+import { useNavigate } from 'react-router-dom';
 
 interface ProductFormProps {
   onSubmit: (data: CreateProductInput) => Promise<void>;
@@ -30,6 +31,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
   const [preview, setPreview] = useState<string | null>(initialData?.imageUrl || null);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [success, setSuccess] = useState(false);
+   const navigate = useNavigate();
 
   const categories = ['Coffee', 'Tea', 'Food', 'Desserts', 'Beverages', 'Snacks', 'Other'];
 
@@ -62,12 +64,27 @@ export const ProductForm: React.FC<ProductFormProps> = ({
     const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
-      [name]: name === 'price' || name === 'stock' ? parseInt(value) || 0 : value,
+      [name]: name === 'price' || name === 'stock' ? parseFloat(value) || 0 : value,
     }));
     // Clear error for this field
     if (errors[name]) {
       setErrors((prev) => ({ ...prev, [name]: '' }));
     }
+  };
+
+  // FIXED: Handle stock input with custom validation
+  const handleStockChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    const numValue = parseInt(value) || 0;
+    
+    // Custom validation for negative values
+    if (numValue < 0) {
+      setErrors((prev) => ({ ...prev, stock: 'Stock cannot be negative' }));
+      return;
+    }
+    
+    setFormData((prev) => ({ ...prev, stock: numValue }));
+    setErrors((prev) => ({ ...prev, stock: '' }));
   };
 
   // Handle image selection
@@ -103,6 +120,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
     e.preventDefault();
     
     if (!validateForm()) {
+      toast.error('Please fix form errors');
       return;
     }
 
@@ -110,7 +128,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
       await onSubmit(formData);
       setSuccess(true);
       setTimeout(() => setSuccess(false), 3000);
-      toast.success('Product added successfully!');
+      toast.success(isEditing ? 'Product updated successfully!' : 'Product added successfully!');
       
       if (!isEditing) {
         setFormData({
@@ -125,6 +143,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
       }
     } catch (err) {
       setErrors({ submit: 'Failed to save product' });
+      toast.error('Failed to save product');
     }
   };
 
@@ -256,7 +275,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
                 onChange={handleChange}
                 placeholder="0.00"
                 step="0.01"
-                min="0"
+                min="0.01"
                 className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 ${
                   errors.price ? 'border-red-500' : 'border-gray-300'
                 }`}
@@ -264,7 +283,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
               {errors.price && <p className="text-xs text-red-600 mt-1">{errors.price}</p>}
             </div>
 
-            {/* Stock */}
+            {/* Stock - FIXED with custom handler */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Stock Quantity *
@@ -273,9 +292,8 @@ export const ProductForm: React.FC<ProductFormProps> = ({
                 type="number"
                 name="stock"
                 value={formData.stock}
-                onChange={handleChange}
+                onChange={handleStockChange}
                 placeholder="0"
-                min="0"
                 className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 ${
                   errors.stock ? 'border-red-500' : 'border-gray-300'
                 }`}
@@ -308,6 +326,13 @@ export const ProductForm: React.FC<ProductFormProps> = ({
             >
               {loading ? 'Saving...' : (isEditing ? 'Update Product' : 'Add Product')}
             </Button>
+            <Button
+                type="button"
+                variant="outline"
+                onClick={() => navigate('/products/list')}
+              >
+                Cancel
+              </Button>
           </div>
         </form>
       </CardContent>
