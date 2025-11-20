@@ -1,36 +1,26 @@
 // src/pages/Products.tsx (UPDATED for Issue #4)
-import { useState } from 'react';
-import { ProductList } from '@/components/pos/ProductList';
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useProducts } from '@/hooks/useProducts';
 import { AlertCircle } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 export default function Products() {
+  const navigate = useNavigate();
   const { products, getCategories } = useProducts();
-  const [showDetails, setShowDetails] = useState(false);
 
   const categories = getCategories();
   const totalProducts = products.length;
   const totalValue = products.reduce((sum, p) => sum + (p.price * p.stock), 0);
   const lowStockProducts = products.filter(p => p.stock <= 5).length;
 
-  if (showDetails) {
-    return (
-      <div className="space-y-4">
-        <Button variant="outline" onClick={() => setShowDetails(false)}>
-          ← Back to Overview
-        </Button>
-        <ProductList />
-      </div>
-    );
-  }
 
   return (
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold text-gray-900">Manage Dishes</h1>
+        <h1 className="text-3xl font-bold text-gray-900">Manage Products</h1>
         <p className="text-gray-600 mt-1">Create and manage your menu items</p>
       </div>
 
@@ -78,7 +68,7 @@ export default function Products() {
               </p>
             </div>
             <Button
-              onClick={() => setShowDetails(true)}
+              onClick={() => navigate('/products/list')}
               className="bg-amber-600 hover:bg-amber-700 whitespace-nowrap"
             >
               Manage Products
@@ -131,7 +121,7 @@ export default function Products() {
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => setShowDetails(true)}
+                onClick={() => navigate('/products/list?filter=low-stock')}
                 className="mt-3 border-yellow-400 text-yellow-700 hover:bg-yellow-100"
               >
                 View Products
