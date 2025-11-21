@@ -1,5 +1,4 @@
 // src/pages/products/Categories.tsx
-
 import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -16,6 +15,7 @@ import {
   Check
 } from 'lucide-react';
 import { useProducts } from '@/hooks/useProducts';
+import { useCategories } from '@/hooks/useCategories';
 import { toast } from 'sonner';
 
 interface CategoryStats {
@@ -28,6 +28,7 @@ interface CategoryStats {
 export default function Categories() {
   const navigate = useNavigate();
   const { products, getCategories, updateProduct } = useProducts();
+  const { addCategory } = useCategories();
   const [editingCategory, setEditingCategory] = useState<string | null>(null);
   const [newCategoryName, setNewCategoryName] = useState('');
   const [showAddForm, setShowAddForm] = useState(false);
@@ -36,6 +37,7 @@ export default function Categories() {
   // Calculate category statistics
   const categoryStats: CategoryStats[] = useMemo(() => {
     const categories = getCategories();
+    const addCategories = addCategory ? [addCategory] : [];
     
     return categories.map(category => {
       const categoryProducts = products.filter(p => p.category === category);
@@ -67,6 +69,8 @@ export default function Categories() {
 
     // Category will be created when first product is added to it
     toast.success(`Category "${trimmed}" ready to use`);
+
+    await addCategory({ name: trimmed });
     setNewCategoryName('');
     setShowAddForm(false);
   };
@@ -366,7 +370,7 @@ export default function Categories() {
 
       {/* Delete Confirmation Modal */}
       {deleteConfirm && (
-        <div className="fixed inset-0 bg-transparent backdrop-blur-sm flex items-center justify-center z-50">
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
           <Card className="w-96 shadow-2xl">
             <CardHeader className="bg-red-50 border-b">
               <CardTitle className="text-red-900 flex items-center gap-2">
