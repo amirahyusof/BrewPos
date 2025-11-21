@@ -2,18 +2,37 @@
 import { openDB } from 'idb';
 
 const DB_NAME = 'brewpos';
-const DB_VERSION = 1;
-const PRODUCT_STORE = 'products'; // Changed from 'local_products' to match useProducts
-const TXN_STORE = 'transactions'; // Changed from 'local_transactions' to match
+const DB_VERSION = 2;
+const PRODUCT_STORE = 'products'; 
+const TXN_STORE = 'transactions'; 
 
-export async function initDB() {
+
+// Initialize IndexedDB
+async function initDB() {
   return openDB(DB_NAME, DB_VERSION, {
     upgrade(db) {
+      // Products store
       if (!db.objectStoreNames.contains(PRODUCT_STORE)) {
-        db.createObjectStore(PRODUCT_STORE, { keyPath: 'id' });
+        const productStore = db.createObjectStore(PRODUCT_STORE, { keyPath: 'id' });
+        productStore.createIndex('category', 'category', { unique: false });
+        productStore.createIndex('name', 'name', { unique: false });
+        console.log('Created products store');
       }
+
+      // Orders store
       if (!db.objectStoreNames.contains(TXN_STORE)) {
-        db.createObjectStore(TXN_STORE, { keyPath: 'id' });
+        const orderStore = db.createObjectStore(TXN_STORE, { keyPath: 'id' });
+        orderStore.createIndex('createdAt', 'createdAt', { unique: false });
+        orderStore.createIndex('status', 'status', { unique: false });
+        console.log('Created orders store');
+      }
+
+      // Categories store - NEW
+      if (!db.objectStoreNames.contains('categories')) {
+        const categoryStore = db.createObjectStore('categories', { keyPath: 'id' });
+        categoryStore.createIndex('name', 'name', { unique: true });
+        categoryStore.createIndex('createdAt', 'createdAt', { unique: false });
+        console.log('Created categories store');
       }
     },
   });
