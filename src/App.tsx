@@ -2,6 +2,7 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { NavContextProvider } from '@/context/NavContext';
 import MainLayout from '@/components/MainLayout';
+import { Toaster } from 'sonner';
 
 // Pages
 import Dashboard from '@/pages/Dashboard';
@@ -23,10 +24,12 @@ function App() {
   return (
     <Router>
       <NavContextProvider>
+        <Toaster position="top-right" richColors />
         <Routes>
           {/* Main Layout Routes */}
           <Route element={<MainLayout />}>
             {/* Dashboard */}
+            <Route path="/" element={<Navigate to="/dashboard" replace />} />
             <Route path="/dashboard" element={<Dashboard />} />
 
             {/* Orders */}
@@ -39,7 +42,7 @@ function App() {
             <Route path="/products" element={<Products />} />
             <Route path="/products/list" element={<ProductList />} />
             <Route path="/products/add" element={<ProductAdd />} />
-            <Route path="/products/edit" element={<ProductEdit />} />
+            <Route path="/products/edit/:id" element={<ProductEdit />} />
             <Route path="/products/categories" element={<Categories />} />
 
             {/* Other Pages */}

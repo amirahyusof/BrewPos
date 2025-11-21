@@ -1,5 +1,5 @@
 
-// src/components/app-sidebar.tsx (UPDATED - Fixed Routing)
+// src/components/app-sidebar.tsx - FIXED NAVIGATION
 import React, { useState } from 'react';
 import {
   Minus,
@@ -47,7 +47,7 @@ interface NavItem {
   items?: NavItem[];
 }
 
-// Updated navigation data with CONSISTENT URL handling
+// Updated navigation data
 const data = {
   navMain: [
     {
@@ -58,21 +58,21 @@ const data = {
     {
       title: "Main Order",
       icon: <ShoppingCart className="w-4 h-4" />,
-      url: "/orders", 
+      url: "/orders",
       items: [
         {
           title: "Point of Sale",
-          url: "/order/pos", 
+          url: "/order/pos",
           icon: <ShoppingCart className="w-3 h-3" />,
         },
         {
           title: "Order History",
-          url: "/order/history",  
+          url: "/order/history",
           icon: <BarChart3 className="w-3 h-3" />,
         },
         {
           title: "New Order",
-          url: "/order/new", 
+          url: "/order/new",
           icon: <Plus className="w-3 h-3" />,
         },
       ],
@@ -84,32 +84,32 @@ const data = {
     },
     {
       title: "Withdrawals",
-      url: "/withdrawals", 
+      url: "/withdrawals",
       icon: <Wallet className="w-4 h-4" />,
     },
     {
       title: "Manage Products",
       icon: <UtensilsCrossed className="w-4 h-4" />,
-      url: "/products", 
+      url: "/products",
       items: [
         {
           title: "All Products",
-          url: "/products/list", 
+          url: "/products/list",
           icon: <UtensilsCrossed className="w-3 h-3" />,
         },
         {
           title: "Add New Product",
-          url: "/products/add", 
+          url: "/products/add",
           icon: <Plus className="w-3 h-3" />,
         },
         {
           title: "Edit Product",
-          url: "/products/edit", 
+          url: "/products/edit",
           icon: <Edit className="w-3 h-3" />,
         },
         {
           title: "Categories",
-          url: "/products/categories", 
+          url: "/products/categories",
           icon: <LayoutDashboard className="w-3 h-3" />,
         },
       ],
@@ -138,15 +138,19 @@ export function AppSidebar({ user, onLogout, isOnline = true, ...props }: AppSid
   const location = useLocation();
   const [hoveredItem, setHoveredItem] = useState<string | null>(null);
 
-  // Check if a route is active (SIMPLIFIED - only check 'url' property)
+  // Check if a route is active
   const isActive = (path?: string) => {
     if (!path) return false;
     return location.pathname === path || location.pathname.startsWith(path + '/');
   };
 
-  // Handle navigation - CONSISTENT handling for all items
-  const handleNavigate = (path?: string) => {
+  // FIXED: Handle navigation - ALWAYS navigate, even if already on parent route
+  const handleNavigate = (path?: string, event?: React.MouseEvent) => {
+    if (event) {
+      event.stopPropagation(); // Prevent event bubbling
+    }
     if (path && path !== '#') {
+      console.log('Navigating to:', path);
       navigate(path);
       setTimeout(() => {
         window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -200,7 +204,7 @@ export function AppSidebar({ user, onLogout, isOnline = true, ...props }: AppSid
           <SidebarMenu className="gap-1">
             {data.navMain.map((item, index) => {
               const hasChildren = item.items && item.items.length > 0;
-              const itemPath = item.url; // Use 'url' consistently
+              const itemPath = item.url;
               const itemIsActive = isActive(itemPath);
               const hasActiveChild = item.items?.some(child => isActive(child.url));
 
@@ -216,11 +220,11 @@ export function AppSidebar({ user, onLogout, isOnline = true, ...props }: AppSid
                   >
                     {hasChildren ? (
                       <>
-                        {/* Parent with children - clicking opens menu or navigates */}
-                        <CollapsibleTrigger asChild>
+                        {/* FIXED: Parent with children - separate click handlers */}
+                        <div className="relative">
                           <SidebarMenuButton
                             className={`
-                              transition-all duration-300 ease-out
+                              transition-all duration-300 ease-out w-full
                               ${hasActiveChild || itemIsActive
                                 ? 'bg-linear-to-r from-amber-600 to-amber-700 text-white shadow-lg'
                                 : 'text-gray-300 hover:bg-gray-800 hover:text-white'
@@ -230,10 +234,11 @@ export function AppSidebar({ user, onLogout, isOnline = true, ...props }: AppSid
                                 : ''
                               }
                             `}
-                            onClick={() => {
-                              // If no child is active, navigate to parent URL
-                              if (!hasActiveChild && itemPath) {
-                                handleNavigate(itemPath);
+                            onClick={(e) => {
+                              // FIXED: Always navigate to parent URL
+                              e.stopPropagation();
+                              if (itemPath) {
+                                handleNavigate(itemPath, e);
                               }
                             }}
                           >
@@ -246,10 +251,22 @@ export function AppSidebar({ user, onLogout, isOnline = true, ...props }: AppSid
                               </span>
                               <span className="font-medium text-sm">{item.title}</span>
                             </span>
-                            <Plus className="ml-auto w-4 h-4 transition-all duration-300 group-data-[state=open]/collapsible:hidden" />
-                            <Minus className="ml-auto w-4 h-4 transition-all duration-300 group-data-[state=closed]/collapsible:hidden" />
                           </SidebarMenuButton>
-                        </CollapsibleTrigger>
+                          
+                          {/* FIXED: Separate toggle button for collapse/expand */}
+                          <CollapsibleTrigger asChild>
+                            <button
+                              className="absolute right-2 top-1/2 -translate-y-1/2 p-1 hover:bg-white/10 rounded transition-colors"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                // Just toggle - no navigation
+                              }}
+                            >
+                              <Plus className="w-4 h-4 transition-all duration-300 group-data-[state=open]/collapsible:hidden" />
+                              <Minus className="w-4 h-4 transition-all duration-300 group-data-[state=closed]/collapsible:hidden" />
+                            </button>
+                          </CollapsibleTrigger>
+                        </div>
 
                         {/* Submenu Items */}
                         {item.items?.length && (
@@ -276,7 +293,10 @@ export function AppSidebar({ user, onLogout, isOnline = true, ...props }: AppSid
                                           : ''
                                         }
                                       `}
-                                      onClick={() => handleNavigate(subItem.url)}
+                                      onClick={(e) => {
+                                        e.preventDefault();
+                                        handleNavigate(subItem.url, e);
+                                      }}
                                     >
                                       <a href="#" onClick={(e) => e.preventDefault()}>
                                         <span className={`
