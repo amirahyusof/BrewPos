@@ -3,7 +3,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { AlertCircle, Upload, X } from 'lucide-react';
 import type { Product, CreateProductInput } from '@/hooks/useProducts';
-import { useProducts } from '@/hooks/useProducts';
+import { useProducts } from "@/hooks/useProducts";
+import { useCategories } from "@/hooks/useCategories";
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
 
@@ -33,9 +34,11 @@ export const ProductForm: React.FC<ProductFormProps> = ({
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [success, setSuccess] = useState(false);
   const navigate = useNavigate();
+  const { getCategoryNames } = useCategories();
   const { getCategories } = useProducts();
 
-  const categories = getCategories();
+  const categories = getCategoryNames() && getCategories();
+
 
   // Validate form
   const validateForm = (): boolean => {
