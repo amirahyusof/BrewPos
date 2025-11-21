@@ -1,7 +1,8 @@
-// src/hooks/useProducts.ts - FIXED OFFLINE SUPPORT
+// src/hooks/useProducts.ts - WITH AUTO CATEGORY SAVE
 import { useState, useEffect } from 'react';
 import { useLocalDB } from './useLocalDB';
 import { toast } from 'sonner';
+import { useCategories } from './useCategories'
 
 export interface Product {
   id: string;
@@ -29,6 +30,7 @@ export function useProducts() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { addItem, getAll, updateItem, deleteItem } = useLocalDB();
+  const { getCategoryNames } = useCategories();
 
   // Load all products from IndexedDB
   const loadProducts = async () => {
@@ -51,6 +53,30 @@ export function useProducts() {
     }
   };
 
+  // Auto-save category to database
+  const ensureCategoryExists = async (categoryName: string) => {
+    try {
+      const existingCategories = getCategoryNames();
+      const exists = existingCategories.some(
+        (cat: string) => cat.toLowerCase() === categoryName.toLowerCase()
+      );
+
+      if (!exists) {
+        const newCategory = {
+          id: `cat_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+          name: categoryName,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        };
+        
+        await addItem('categories', newCategory);
+        console.log('Auto-created category:', categoryName);
+      }
+    } catch (err) {
+      console.error('Error ensuring category exists:', err);
+    }
+  };
+
   // Load products on mount
   useEffect(() => {
     loadProducts();
@@ -59,6 +85,9 @@ export function useProducts() {
   // Add new product
   const addProduct = async (input: CreateProductInput): Promise<Product | null> => {
     try {
+      // Auto-save category if new
+      await ensureCategoryExists(input.category);
+
       const newProduct: Product = {
         id: `prod_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
         ...input,
@@ -93,6 +122,11 @@ export function useProducts() {
         setError(errorMsg);
         toast.error(errorMsg);
         return null;
+      }
+
+      // Auto-save category if changed
+      if (updates.category && updates.category !== product.category) {
+        await ensureCategoryExists(updates.category);
       }
 
       const updatedProduct: Product = {
